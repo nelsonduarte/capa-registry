@@ -63,9 +63,44 @@ fetch cannot complete.
 
 ## Trust model
 
-The index is a name-to-URL convenience, not a trust root by
-itself. The actual integrity guarantees come from the same
-three layers `capa install` already enforces:
+The index resolves a name to a git URL **and** the `verify_key`
+that anchors the package's tag-signature check, so the index
+itself is a trust root: tamper with it in transit and you
+control both the source and the key the consumer trusts. To
+close that, the index is **signed**.
+
+### Signed index
+
+`index.json` ships with a detached GPG signature
+`index.json.asc`, produced by the registry root key:
+
+```
+gpg --armor --detach-sign --local-user <ROOT_KEY> index.json
+```
+
+Root key fingerprint:
+
+```
+6C1D 222D 491F B880 31E0  41A5 36CF B426 101A A24B
+```
+
+The Capa toolchain fetches `index.json.asc` alongside the index
+and verifies the exact index bytes against this fingerprint
+before trusting any entry. The fingerprint ships **with the
+toolchain binary**, out of band from the index, so a MITM or a
+poisoned cache cannot substitute it. The toolchain also requires
+an authenticated transport (`https://`) for the index URL.
+
+Phasing: while the toolchain's baked-in root key is still empty
+(pre-1.0), an unsigned or unverifiable index fails **open** with
+a one-time warning so existing `capa add` keeps working; once the
+key is baked in, a missing or invalid signature fails **closed**.
+See `docs/design/signed-registry-index.md` in the main repo.
+
+### Per-package layers
+
+Below the index, the three layers `capa install` already
+enforces still apply:
 
 1. **Lockfile SHA pinning** (`capa.lock`) catches a retagged
    release.
@@ -79,7 +114,8 @@ three layers `capa install` already enforces:
 The index carries the `verify_key` so that resolving a name
 also pins the expected signer; an attacker who edits this index
 to point a name at a malicious repo still cannot forge a tag
-signed by the real key.
+signed by the real key -- and now cannot forge the index entry
+either, because the index is signed.
 
 ## Adding a package
 
@@ -91,6 +127,17 @@ package must:
   (recommended) so the three-layer trust model applies.
 - Have a stable public API surface (a `pub` boundary that the
   importing program can rely on).
+
+After editing `index.json`, **re-sign it** so the detached
+signature matches the new bytes:
+
+```
+gpg --armor --detach-sign --local-user <ROOT_KEY> index.json
+```
+
+and commit `index.json` and `index.json.asc` together. A commit
+that changes the index without refreshing the signature will be
+rejected by toolchains that enforce verification.
 
 ## License
 
