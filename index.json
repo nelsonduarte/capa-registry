@@ -1,6 +1,6 @@
 {
   "registry_version": 1,
-  "updated": "2026-05-27",
+  "updated": "2026-06-10",
   "packages": {
     "capa_cli": {
       "git": "https://github.com/nelsonduarte/capa_cli",
@@ -25,6 +25,12 @@
       "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
       "latest": "v0.1.2",
       "description": "Structured logging with levels and formatters over the Stdio capability."
+    },
+    "capa_sbom": {
+      "git": "https://github.com/nelsonduarte/capa_sbom",
+      "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
+      "latest": "v0.1.0",
+      "description": "SBOM parsing for CycloneDX and SPDX JSON with capa:* capability queries; zero capabilities."
     }
   }
 }
