@@ -1,0 +1,8 @@
+# The registry index is signed byte-for-byte by the root key, and a
+# consumer verifies the detached signature against the exact bytes it
+# checks out. Line-ending conversion would change those bytes and
+# break verification on any platform whose autocrlf differs from the
+# signer's, so pin the signed index and its signature to LF and treat
+# the signature as binary (never converted, never diffed).
+index.json text eol=lf
+index.json.asc -text
