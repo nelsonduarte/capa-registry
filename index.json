@@ -8,6 +8,12 @@
       "latest": "v0.1.2",
       "description": "Command-line argument parsing: flags, positionals, subcommands."
     },
+    "capa_csv": {
+      "git": "https://github.com/nelsonduarte/capa_csv",
+      "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
+      "latest": "v0.1.0",
+      "description": "RFC 4180 CSV parser, header view, and writer in pure Capa; zero capabilities."
+    },
     "capa_datetime": {
       "git": "https://github.com/nelsonduarte/capa_datetime",
       "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
