@@ -20,6 +20,12 @@
       "latest": "v0.1.2",
       "description": "Date and time values plus formatting; pure, no Clock capability required to format."
     },
+    "capa_hash": {
+      "git": "https://github.com/nelsonduarte/capa_hash",
+      "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
+      "latest": "v0.1.0",
+      "description": "SHA-256, SHA-224 and HMAC-SHA256 in pure Capa; zero capabilities, constant-time-marked compression."
+    },
     "capa_http": {
       "git": "https://github.com/nelsonduarte/capa_http",
       "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
