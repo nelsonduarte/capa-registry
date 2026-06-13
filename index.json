@@ -23,8 +23,8 @@
     "capa_hash": {
       "git": "https://github.com/nelsonduarte/capa_hash",
       "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
-      "latest": "v0.1.0",
-      "description": "SHA-256, SHA-224 and HMAC-SHA256 in pure Capa; zero capabilities, constant-time-marked compression."
+      "latest": "v0.1.1",
+      "description": "SHA-256, SHA-224 and HMAC-SHA256 in pure Capa; zero capabilities, plus constant-time tag/MAC comparison."
     },
     "capa_http": {
       "git": "https://github.com/nelsonduarte/capa_http",
