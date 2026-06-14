@@ -1,6 +1,6 @@
 {
   "registry_version": 1,
-  "updated": "2026-06-13",
+  "updated": "2026-06-14",
   "packages": {
     "capa_cli": {
       "git": "https://github.com/nelsonduarte/capa_cli",
@@ -11,7 +11,7 @@
     "capa_csv": {
       "git": "https://github.com/nelsonduarte/capa_csv",
       "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
-      "latest": "v0.1.0",
+      "latest": "v0.1.1",
       "description": "RFC 4180 CSV parser, header view, and writer in pure Capa; zero capabilities."
     },
     "capa_datetime": {
@@ -23,7 +23,7 @@
     "capa_hash": {
       "git": "https://github.com/nelsonduarte/capa_hash",
       "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
-      "latest": "v0.1.1",
+      "latest": "v0.1.2",
       "description": "SHA-256, SHA-224 and HMAC-SHA256 in pure Capa; zero capabilities, plus constant-time tag/MAC comparison."
     },
     "capa_http": {
@@ -47,7 +47,7 @@
     "capa_test": {
       "git": "https://github.com/nelsonduarte/capa_test",
       "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
-      "latest": "v0.1.0",
+      "latest": "v0.1.1",
       "description": "A tiny assertion library for the capa test runner; Stdio-only, no other capabilities."
     }
   }
