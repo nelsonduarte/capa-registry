@@ -91,11 +91,18 @@ toolchain binary**, out of band from the index, so a MITM or a
 poisoned cache cannot substitute it. The toolchain also requires
 an authenticated transport (`https://`) for the index URL.
 
-Phasing: while the toolchain's baked-in root key is still empty
-(pre-1.0), an unsigned or unverifiable index fails **open** with
-a one-time warning so existing `capa add` keeps working; once the
-key is baked in, a missing or invalid signature fails **closed**.
-See `docs/design/signed-registry-index.md` in the main repo.
+Verification is **fail-closed** against the root key baked into
+the toolchain (enforced since 2026-06-01): an index with no
+signature, with a signature that does not verify, or signed under
+the wrong fingerprint is **rejected**, so a tampered index never
+reaches the install flow. The only opt-out is the environment
+variable `CAPA_REGISTRY_ALLOW_UNSIGNED=1`, which applies **only**
+to an unsigned index (air-gapped or self-hosted mirrors that
+legitimately serve no `.asc`); it never rescues a signature that
+is present but invalid. `capa add --git <url>` goes straight to
+the package's git repo and does not pass through the index, so it
+is not affected by this gate. See
+`docs/design/signed-registry-index.md` in the main repo.
 
 ### Per-package layers
 
