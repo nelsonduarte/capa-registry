@@ -2,6 +2,12 @@
   "registry_version": 1,
   "updated": "2026-06-14",
   "packages": {
+    "capa_base64": {
+      "git": "https://github.com/nelsonduarte/capa_base64",
+      "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
+      "latest": "v0.1.0",
+      "description": "Base64 and Base64url (RFC 4648) in pure Capa; zero capabilities, with strict-canonical decoders for token use."
+    },
     "capa_cli": {
       "git": "https://github.com/nelsonduarte/capa_cli",
       "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
