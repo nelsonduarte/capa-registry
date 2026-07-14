@@ -1,0 +1,53 @@
+name: validate
+
+# Safety net for the curated registry index. On every push / PR this
+# proves index.json is well-formed, that every git URL clears the Capa
+# toolchain's OWN allow-list, that index.json.asc is a valid detached
+# signature of the CURRENT index bytes by the registry root key, and
+# that each package's `latest` tag exists and is signed by its
+# verify_key. A hand-edit that forgets to re-sign, points at a bad URL,
+# or names a missing tag turns this job red.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate signed index
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6.3.0
+        with:
+          python-version: "3.12"
+
+      - name: Install the Capa toolchain from its git tag
+        # The validator REUSES capa's own _validate_git_url allow-list,
+        # package-name shape, and supported registry version so this CI
+        # cannot drift from what `capa add` actually accepts. Pin to a
+        # released tag. Note: the PyPI name `capa` is an unrelated tool,
+        # so install straight from git, never from PyPI.
+        run: pip install "git+https://github.com/nelsonduarte/capa-language.git@v1.16.0"
+
+      - name: Show gpg + capa versions
+        run: |
+          gpg --version | head -1
+          python -c "import capa, capa.pkg._registry as r; print('capa root key', r._REGISTRY_ROOT_KEY)"
+
+      - name: Validate the index
+        # The validator builds an ISOLATED gpg keyring from the public
+        # keys committed under keys/ (never the runner's ambient keyring)
+        # and verifies both the index signature and every tag signature
+        # against it. Adding a new per-package signer later is just
+        # dropping its public key under keys/ - no workflow change.
+        run: python scripts/validate_index.py
