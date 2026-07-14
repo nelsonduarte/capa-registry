@@ -1,6 +1,6 @@
 {
   "registry_version": 1,
-  "updated": "2026-06-14",
+  "updated": "2026-07-14",
   "packages": {
     "capa_base64": {
       "git": "https://github.com/nelsonduarte/capa_base64",
