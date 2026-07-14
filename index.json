@@ -38,6 +38,12 @@
       "latest": "v0.1.3",
       "description": "HTTP client over the Net capability; urllib-backed request and response handling."
     },
+    "capa_jwt": {
+      "git": "https://github.com/nelsonduarte/capa_jwt",
+      "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
+      "latest": "v0.1.0",
+      "description": "HS256 JSON Web Tokens (JWS/JWT) in pure Capa; sign and verify with zero capabilities, algorithm-confusion defense, and constant-time signature checks."
+    },
     "capa_log": {
       "git": "https://github.com/nelsonduarte/capa_log",
       "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
@@ -55,6 +61,12 @@
       "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
       "latest": "v0.1.1",
       "description": "A tiny assertion library for the capa test runner; Stdio-only, no other capabilities."
+    },
+    "capa_uuid": {
+      "git": "https://github.com/nelsonduarte/capa_uuid",
+      "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
+      "latest": "v0.1.0",
+      "description": "UUID v4 and v7 generation and validation in Capa with a minimal capability surface (v4 needs only Random, v7 Random+Clock, validation is pure)."
     }
   }
 }
