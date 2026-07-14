@@ -44,10 +44,26 @@ jobs:
           gpg --version | head -1
           python -c "import capa, capa.pkg._registry as r; print('capa root key', r._REGISTRY_ROOT_KEY)"
 
-      - name: Validate the index
-        # The validator builds an ISOLATED gpg keyring from the public
-        # keys committed under keys/ (never the runner's ambient keyring)
-        # and verifies both the index signature and every tag signature
-        # against it. Adding a new per-package signer later is just
-        # dropping its public key under keys/ - no workflow change.
+      # The validator builds an ISOLATED gpg keyring from the public keys
+      # committed under keys/ (never the runner's ambient keyring) and
+      # verifies both the index signature and every tag signature against
+      # it. Adding a new per-package signer later is just dropping its
+      # public key under keys/ - no workflow change.
+      #
+      # The two steps below are mutually exclusive on github.event_name:
+      #
+      #   * pull_request: a contribution PR changes index.json's bytes,
+      #     but only the root key can re-sign index.json.asc and the
+      #     contributor does not have it. So skip ONLY check 3 (the
+      #     index-signature-over-current-bytes check); checks 1/2/4 still
+      #     run, so a valid entry goes green instead of false-red.
+      #   * push (main) / workflow_dispatch: run ALL four checks, so the
+      #     merged, curator-re-signed index MUST be validly signed. The
+      #     trust anchor stays enforced exactly where it matters.
+      - name: Validate the index (pull request; index signature skipped)
+        if: github.event_name == 'pull_request'
+        run: python scripts/validate_index.py --skip-index-signature
+
+      - name: Validate the index (push / dispatch; all four checks)
+        if: github.event_name != 'pull_request'
         run: python scripts/validate_index.py

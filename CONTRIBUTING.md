@@ -92,7 +92,7 @@ Every push and pull request runs
 [`scripts/validate_index.py`](scripts/validate_index.py) via the
 [`validate` workflow](.github/workflows/validate.yml). It builds an
 isolated GPG keyring from the **public** keys committed under `keys/`
-(never the runner's ambient keyring) and runs four families of
+(never the runner's ambient keyring) and runs these families of
 checks:
 
 1. **Schema.** `index.json` parses; `registry_version` is a supported
@@ -105,21 +105,26 @@ checks:
    `_validate_git_url`.
 3. **Index signature.** `index.json.asc` is a valid detached
    signature over the **current** `index.json` bytes, by the root
-   fingerprint.
+   fingerprint. **This check runs on the `main` branch, not on your
+   PR** (see below).
 4. **Tag signature.** For every package that declares a `verify_key`,
    the `latest` tag exists in the target repo and its tag object is
    GPG-signed by that key.
 
-Checks 1, 2, and 4 give you fast, direct feedback on your proposed
-entry: a bad URL, a missing or unsigned tag, or a malformed field
-turns the job red with the exact reason.
+On your **pull request** the workflow runs checks 1, 2, and 4, so a
+valid entry goes fully green: a bad URL, a missing or unsigned tag, or
+a malformed field turns the job red with the exact reason, and a
+correct entry passes. These are the checks you drive.
 
-**Expect check 3 (index signature) to be red on your PR, and that is
-normal.** Editing `index.json` changes its bytes, so the committed
-`index.json.asc` no longer matches, and only the root key can produce
-a fresh signature. You cannot re-sign, so the signature check stays
-red until the curator re-signs on merge. Treat checks 1, 2, and 4 as
-the ones you drive to green; check 3 is the curator's step.
+The **index signature (check 3) is not run on your PR.** Editing
+`index.json` changes its bytes, so the committed `index.json.asc` no
+longer matches, and only the root key can produce a fresh one, which
+you do not have. Demanding that signature on your PR would be a
+guaranteed red with no security value, so the PR job skips it. It is
+not dropped: the curator applies the signature when they re-sign on
+merge, and the **`main`-branch CI runs check 3 on every push**, so the
+merged index still must be validly signed. The trust anchor stays
+enforced exactly where it matters.
 
 ## What the curator does to accept
 
