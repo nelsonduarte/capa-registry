@@ -68,6 +68,14 @@ def main(argv: Optional[list[str]] = None) -> int:
         help="skip the tag existence + signature checks (offline schema "
              "and index-signature validation only)",
     )
+    parser.add_argument(
+        "--skip-index-signature", action="store_true",
+        help="skip ONLY the index-signature-over-current-bytes check "
+             "(check 3); checks 1/2/4 still run. For pull-request CI, "
+             "where the contributor cannot produce the root-key signature. "
+             "The check is enforced on the main branch after the curator "
+             "re-signs.",
+    )
     args = parser.parse_args(argv)
 
     try:
@@ -85,7 +93,22 @@ def main(argv: Optional[list[str]] = None) -> int:
         with tempfile.TemporaryDirectory(prefix="capa_regkeyring_") as kd:
             gnupghome = Path(kd)
             ok += lib.build_keyring(gnupghome, args.keys_dir)
-            ok += lib.check_index_signature(args.index, args.sig, gnupghome)
+            if args.skip_index_signature:
+                # Skip ONLY check 3. The index signature is the trust
+                # anchor, but only the root key can produce it, so a
+                # contributor's PR (which changes index.json's bytes)
+                # structurally cannot pass it. Demanding it on PRs is
+                # false-red with no security gain. It stays ENFORCED on
+                # main, where the push job runs without this flag after
+                # the curator re-signs. Printed (never silently omitted).
+                ok.append(
+                    "index-signature check SKIPPED (--skip-index-signature): "
+                    "only the root key can sign index.json, so this check is "
+                    "skipped on pull requests; it is ENFORCED on the main "
+                    "branch after the curator re-signs on merge."
+                )
+            else:
+                ok += lib.check_index_signature(args.index, args.sig, gnupghome)
             if args.skip_network:
                 ok.append("tag checks SKIPPED (--skip-network)")
             else:
