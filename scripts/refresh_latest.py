@@ -5,8 +5,10 @@ For every package that declares a ``verify_key``, this finds the newest
 ``vX.Y.Z`` tag in its git repo that is GPG-signed by that key (the
 highest semver among the SIGNED tags only, never an unsigned newer tag),
 and where that is newer than the recorded ``latest`` it updates the entry
-in ``index.json`` (preserving the file's exact canonical format), re-signs
-in one safe step, and reports each change as ``pkg: vOLD -> vNEW``.
+in ``index.json`` (preserving the file's exact canonical format), then
+re-signs in one safe step - which re-verifies EVERY entry's tag signature
+before signing, so it can never produce a signed-but-CI-red index - and
+reports each change as ``pkg: vOLD -> vNEW``.
 
   * ``--dry-run`` reports the diff and writes NOTHING (no index edit, no
     signing).
@@ -148,7 +150,9 @@ def main(argv: Optional[list[str]] = None) -> int:
         if args.updated is not None:
             index["updated"] = args.updated
         lib.write_index(args.index, index)
-        sign_notes = sign_and_verify(args.index, args.sig, args.keys_dir)
+        sign_notes = sign_and_verify(
+            args.index, args.sig, args.keys_dir, verify_tags=True,
+        )
     except lib.ValidationError as e:
         print(f"\nFAIL {e}", file=sys.stderr)
         return 1

@@ -79,12 +79,16 @@ DEFAULT_KEYS_DIR = REPO_ROOT / "keys"
 # ``assert_root_key_consistency``).
 ROOT_FINGERPRINT = "6C1D222D491FB88031E041A536CFB426101AA24B"
 
-# A published tag looks like ``vX.Y.Z`` with an optional pre-release /
-# build suffix (``v0.1.2``, ``v1.0.0-rc1``). On top of, not instead of,
-# the toolchain's ``_PIN_RE`` git-argv-safety shape.
+# A published tag looks like ``vX.Y.Z`` with an optional semver
+# pre-release (``-rc1``) and/or build metadata (``+build``): ``v0.1.2``,
+# ``v1.0.0-rc1``, ``v0.1.2+build``. The two suffixes are kept in
+# SEPARATE groups so precedence can follow semver (pre-release lowers
+# precedence; build metadata is ignored). On top of, not instead of, the
+# toolchain's ``_PIN_RE`` git-argv-safety shape.
 _TAG_RE = re.compile(
     r"^v(?P<maj>[0-9]+)\.(?P<min>[0-9]+)\.(?P<pat>[0-9]+)"
-    r"(?:[.+\-](?P<pre>[0-9A-Za-z.+\-]+))?$"
+    r"(?:-(?P<pre>[0-9A-Za-z.-]+))?"
+    r"(?:\+(?P<build>[0-9A-Za-z.-]+))?$"
 )
 
 # Fields the toolchain reads for a package entry. ``git`` is the only
@@ -498,12 +502,14 @@ def sign_index(index_path: Path, sig_path: Path) -> None:
 # --------------------------------------------------------------------------
 
 def parse_tag_version(tag: str) -> Optional[tuple]:
-    """A sort key for ``vX.Y.Z[-pre]`` tags, or None if it is not one.
+    """A sort key for ``vX.Y.Z[-pre][+build]`` tags, or None if not one.
 
     Release versions sort ABOVE a pre-release of the same X.Y.Z (higher
-    key), so ``v1.0.0`` beats ``v1.0.0-rc1``. Pre-releases order
-    lexically by their suffix (a coarse but stable rule; the registry
-    uses plain vX.Y.Z tags).
+    key), so ``v1.0.0`` beats ``v1.0.0-rc1``. Pre-releases order lexically
+    by their identifier (a coarse but stable rule; the registry uses plain
+    vX.Y.Z tags). Build metadata (``+build``) is IGNORED for precedence
+    per semver, so ``v0.1.2+build`` compares EQUAL to ``v0.1.2`` (and both
+    sit above ``v0.1.2-rc1``).
     """
     m = _TAG_RE.match(tag)
     if m is None:

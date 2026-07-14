@@ -13,7 +13,9 @@ canonical format, then re-signs in one safe step:
     existing entry's description (when updating), then the package's own
     ``capa.toml`` ``[package].description`` at that tag; if none can be
     found it refuses and asks for ``--description``;
-  * inserts / updates ``packages.<name>`` and re-signs.
+  * inserts / updates ``packages.<name>`` and re-signs in one safe step -
+    which re-verifies EVERY entry's tag signature before signing, so it
+    can never produce a signed-but-CI-red index.
 
 ``--dry-run`` prints the entry it would add/update and writes nothing.
 
@@ -185,7 +187,9 @@ def main(argv: Optional[list[str]] = None) -> int:
         if args.updated is not None:
             index["updated"] = args.updated
         lib.write_index(args.index, index)
-        sign_notes = sign_and_verify(args.index, args.sig, args.keys_dir)
+        sign_notes = sign_and_verify(
+            args.index, args.sig, args.keys_dir, verify_tags=True,
+        )
     except lib.ValidationError as e:
         print(f"\nFAIL {e}", file=sys.stderr)
         return 1
