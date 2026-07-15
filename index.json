@@ -26,6 +26,12 @@
       "latest": "v0.1.2",
       "description": "Date and time values plus formatting; pure, no Clock capability required to format."
     },
+    "capa_decimal": {
+      "git": "https://github.com/nelsonduarte/capa_decimal",
+      "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
+      "latest": "v0.1.0",
+      "description": "Exact fixed-point decimal arithmetic for money, BigDecimal-style (pure, zero capabilities)."
+    },
     "capa_hash": {
       "git": "https://github.com/nelsonduarte/capa_hash",
       "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
@@ -74,6 +80,12 @@
       "latest": "v0.1.1",
       "description": "A tiny assertion library for the capa test runner; Stdio-only, no other capabilities."
     },
+    "capa_toml": {
+      "git": "https://github.com/nelsonduarte/capa_toml",
+      "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
+      "latest": "v0.1.0",
+      "description": "TOML v1.0.0 configuration parser (pure, zero capabilities)."
+    },
     "capa_url": {
       "git": "https://github.com/nelsonduarte/capa_url",
       "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
@@ -85,6 +97,12 @@
       "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
       "latest": "v0.1.0",
       "description": "UUID v4 and v7 generation and validation in Capa with a minimal capability surface (v4 needs only Random, v7 Random+Clock, validation is pure)."
+    },
+    "capa_validate": {
+      "git": "https://github.com/nelsonduarte/capa_validate",
+      "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
+      "latest": "v0.1.0",
+      "description": "Composable structural input validation for strings and numbers (pure, zero capabilities)."
     }
   }
 }
