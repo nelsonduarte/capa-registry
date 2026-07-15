@@ -1,6 +1,6 @@
 {
   "registry_version": 1,
-  "updated": "2026-07-14",
+  "updated": "2026-07-15",
   "packages": {
     "capa_base64": {
       "git": "https://github.com/nelsonduarte/capa_base64",
@@ -32,6 +32,12 @@
       "latest": "v0.1.2",
       "description": "SHA-256, SHA-224 and HMAC-SHA256 in pure Capa; zero capabilities, plus constant-time tag/MAC comparison."
     },
+    "capa_hex": {
+      "git": "https://github.com/nelsonduarte/capa_hex",
+      "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
+      "latest": "v0.1.0",
+      "description": "Hex/base16 encoding and strict decoding (pure, zero capabilities)."
+    },
     "capa_http": {
       "git": "https://github.com/nelsonduarte/capa_http",
       "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
@@ -50,6 +56,12 @@
       "latest": "v0.1.2",
       "description": "Structured logging with levels and formatters over the Stdio capability."
     },
+    "capa_pbkdf2": {
+      "git": "https://github.com/nelsonduarte/capa_pbkdf2",
+      "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
+      "latest": "v0.1.0",
+      "description": "PBKDF2-HMAC-SHA256 password-based key derivation (pure, composes capa_hash)."
+    },
     "capa_sbom": {
       "git": "https://github.com/nelsonduarte/capa_sbom",
       "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
@@ -61,6 +73,12 @@
       "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
       "latest": "v0.1.1",
       "description": "A tiny assertion library for the capa test runner; Stdio-only, no other capabilities."
+    },
+    "capa_url": {
+      "git": "https://github.com/nelsonduarte/capa_url",
+      "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
+      "latest": "v0.1.0",
+      "description": "RFC 3986 URL parsing, building, percent-encoding and query strings (pure, zero capabilities)."
     },
     "capa_uuid": {
       "git": "https://github.com/nelsonduarte/capa_uuid",
