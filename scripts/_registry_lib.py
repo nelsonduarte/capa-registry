@@ -84,23 +84,33 @@ ROOT_FINGERPRINT = "6C1D222D491FB88031E041A536CFB426101AA24B"
 # ``v1.0.0-rc1``, ``v0.1.2+build``. The two suffixes are kept in
 # SEPARATE groups so precedence can follow semver (pre-release lowers
 # precedence; build metadata is ignored). On top of, not instead of, the
-# toolchain's ``_PIN_RE`` git-argv-safety shape.
+# toolchain's ``_PIN_RE`` git-argv-safety shape. The pattern ends on
+# ``\Z`` (end of string), NOT ``$`` (which in Python also matches just
+# before a trailing newline), so ``"v1.2.3\n"`` is rejected.
 _TAG_RE = re.compile(
     r"^v(?P<maj>[0-9]+)\.(?P<min>[0-9]+)\.(?P<pat>[0-9]+)"
     r"(?:-(?P<pre>[0-9A-Za-z.-]+))?"
-    r"(?:\+(?P<build>[0-9A-Za-z.-]+))?$"
+    r"(?:\+(?P<build>[0-9A-Za-z.-]+))?\Z"
 )
 
-# Fields the toolchain reads for a package entry. ``git`` is the only
-# required one (``_registry._entry_from_spec``); the rest are optional
-# (``_opt_str``). They are serialised in THIS order. Rejecting any OTHER
-# key is deliberately stricter than the toolchain (which ignores unknown
-# keys) to catch a curator typo like ``latset`` that would otherwise
-# silently drop the intended field.
+# Fields the toolchain reads for a package entry. ``git`` is always
+# required (``_registry._entry_from_spec``) and ``verify_key`` is required
+# for any git-bearing entry (see ``check_entry``: an entry may not opt out
+# of tag-signature verification); ``latest`` and ``description`` are
+# optional (``_opt_str``). They are serialised in THIS order. Rejecting
+# any OTHER key is deliberately stricter than the toolchain (which ignores
+# unknown keys) to catch a curator typo like ``latset`` that would
+# otherwise silently drop the intended field.
 _REQUIRED_FIELDS = ("git",)
 _OPTIONAL_FIELDS = ("verify_key", "latest", "description")
 FIELD_ORDER = _REQUIRED_FIELDS + _OPTIONAL_FIELDS
 _KNOWN_FIELDS = frozenset(FIELD_ORDER)
+
+# The only keys ``serialise_index`` writes at the top level. Any other
+# top-level key would be SILENTLY dropped on the next tool write, so
+# ``validate_index_dict`` rejects it, symmetric with the strict per-entry
+# known-fields check above.
+_KNOWN_TOP_LEVEL_FIELDS = frozenset(("registry_version", "updated", "packages"))
 
 
 class ValidationError(Exception):
@@ -213,6 +223,17 @@ def validate_index_dict(index: dict) -> tuple[dict, list[str]]:
     if not isinstance(index, dict):
         raise ValidationError("index top-level value must be a JSON object")
 
+    # Reject unknown TOP-LEVEL keys. ``serialise_index`` only writes
+    # ``registry_version``, ``updated``, ``packages``, so any other
+    # top-level field would be silently discarded on the next tool write.
+    extra_top = set(index.keys()) - _KNOWN_TOP_LEVEL_FIELDS
+    if extra_top:
+        raise ValidationError(
+            f"unknown top-level key(s) {sorted(extra_top)}; allowed: "
+            f"{sorted(_KNOWN_TOP_LEVEL_FIELDS)} (an unknown field would be "
+            f"silently dropped on the next tool write)"
+        )
+
     version = index.get("registry_version")
     # Match the toolchain (``_load_packages``): must be an int, must not
     # exceed the supported version. ``bool`` is an ``int`` subclass, so
@@ -279,30 +300,48 @@ def check_entry(name: str, spec: object) -> list[str]:
         )
 
     git = spec.get("git")
-    if not isinstance(git, str) or not git:
+    has_git = isinstance(git, str) and bool(git)
+    if not has_git:
         problems.append(f"{name!r}: 'git' is required and must be a non-empty string")
 
+    # ``verify_key`` is REQUIRED for any git-bearing entry: an entry that
+    # has a git URL but no verify_key would opt out of tag-signature
+    # verification end to end, contradicting the registry guarantee that
+    # every package's pinned tag is signed by its declared key. Fail closed
+    # here (schema layer) so such an entry can never validate or be signed;
+    # ``check_tag_signatures`` fails closed too (verification layer).
     verify_key = spec.get("verify_key")
-    if verify_key is not None:
-        if not isinstance(verify_key, str):
-            problems.append(f"{name!r}: 'verify_key' must be a string")
-        elif not is_valid_fingerprint(verify_key):
+    if verify_key is None:
+        if has_git:
             problems.append(
-                f"{name!r}: 'verify_key' must be a 40-character hex GPG "
-                f"fingerprint (spaces/colons optional), got {verify_key!r}"
+                f"{name!r}: 'verify_key' is required for a git-bearing entry "
+                f"(a 40-character hex GPG fingerprint); tag-signature "
+                f"verification cannot be skipped"
             )
+    elif not isinstance(verify_key, str):
+        problems.append(f"{name!r}: 'verify_key' must be a string")
+    elif not is_valid_fingerprint(verify_key):
+        problems.append(
+            f"{name!r}: 'verify_key' must be a 40-character hex GPG "
+            f"fingerprint (spaces/colons optional), got {verify_key!r}"
+        )
 
     latest = spec.get("latest")
     if latest is not None:
         if not isinstance(latest, str):
             problems.append(f"{name!r}: 'latest' must be a string")
         else:
+            # ``_TAG_RE`` anchors on ``\Z`` so a trailing newline is
+            # rejected. ``_PIN_RE`` is imported from the toolchain and ends
+            # on ``$``, which in Python also matches before a trailing
+            # newline, so match it with ``fullmatch`` (end-of-string) to
+            # reject a trailing-newline pin here regardless.
             if not _TAG_RE.match(latest):
                 problems.append(
                     f"{name!r}: 'latest' does not look like a tag "
                     f"(expected vX.Y.Z), got {latest!r}"
                 )
-            elif not _PIN_RE.match(latest):
+            elif not _PIN_RE.fullmatch(latest):
                 problems.append(
                     f"{name!r}: 'latest' {latest!r} is not a git-argv-safe "
                     f"ref (must match {_PIN_RE.pattern})"
@@ -612,11 +651,13 @@ def tag_signed_by(git: str, tag: str, expected: str, env: dict) -> Optional[str]
 
 
 def check_tag_signatures(packages: dict, gnupghome: Path) -> list[str]:
-    """For every package with a ``verify_key``, confirm the ``latest`` tag
-    exists and is signed by that key.
+    """For every git-bearing package, confirm the ``latest`` tag exists and
+    is signed by the entry's ``verify_key``.
 
-    Packages without a ``verify_key`` are skipped (the toolchain installs
-    them without tag verification).
+    Fail closed: a git-bearing entry WITHOUT a ``verify_key`` is a problem,
+    not a skip, so no entry can opt out of tag-signature verification (the
+    schema layer in ``check_entry`` rejects it too). An entry with neither
+    git nor verify_key has nothing to check and is noted, not failed.
     """
     env = gpg_env(gnupghome)
     problems: list[str] = []
@@ -629,7 +670,16 @@ def check_tag_signatures(packages: dict, gnupghome: Path) -> list[str]:
         git = spec.get("git")
         latest = spec.get("latest")
         if not isinstance(verify_key, str) or not verify_key:
-            notes.append(f"{name}: no verify_key, tag signature not checked")
+            if isinstance(git, str) and git:
+                problems.append(
+                    f"{name!r}: has a git URL but no verify_key; a "
+                    f"git-bearing entry may not opt out of tag-signature "
+                    f"verification"
+                )
+            else:
+                notes.append(
+                    f"{name}: no git URL and no verify_key, nothing to check"
+                )
             continue
         if not isinstance(git, str) or not isinstance(latest, str):
             problems.append(

@@ -14,8 +14,9 @@ It performs four families of checks:
                   supported integer; ``packages`` is an object; each
                   entry has the required fields with correct types; each
                   package name matches the toolchain's accepted name
-                  shape; each ``verify_key`` (where present) is a 40-char
-                  hex GPG fingerprint; each ``latest`` looks like a tag.
+                  shape; each ``verify_key`` is required for a git-bearing
+                  entry and, when present, is a 40-char hex GPG fingerprint;
+                  each ``latest`` looks like a tag.
   2. Git URL    - every ``git`` passes the compiler's OWN
                   ``_validate_git_url`` allow-list.
   3. Index sig  - ``index.json.asc`` is a valid detached signature of the

@@ -15,8 +15,9 @@ in on merge. You cannot sign it yourself.
 
 ## Checklist
 
-- [ ] I added one `packages.<name>` entry to `index.json` with `git`,
-      `verify_key`, `latest`, and `description`.
+- [ ] I added one `packages.<name>` entry to `index.json` with the
+      required `git` and `verify_key` fields (and, optionally, `latest`
+      and `description`).
 - [ ] The `latest` tag **exists** in the repo and is **GPG-signed by
       the `verify_key`** above (the key `capa add` verifies against on
       install).

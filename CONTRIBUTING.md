@@ -52,8 +52,9 @@ README "Adding a package" section:
 
 - `git` is the package's repository URL.
 - `verify_key` is the GPG fingerprint your release tags are signed
-  with. Include it: without it the package is installed with no
-  tag-signature verification.
+  with. It is required: an entry with a git URL but no valid
+  `verify_key` is rejected, because it would opt out of the
+  tag-signature verification the registry promises.
 - `latest` is a released tag of the form `vX.Y.Z`.
 - `description` is a single line.
 
@@ -77,9 +78,10 @@ reason each one matters:
    the install flow checks the tag signature against. If the tag is
    unsigned, signed by a different key, or missing, the listing would
    promise a guarantee the install cannot honor, so the registry
-   refuses it. (A package with no `verify_key` at all is allowed, but
-   it is then installed with no tag verification; ship a signed tag
-   and declare the key if you want the guarantee.)
+   refuses it. (A git-bearing entry with no `verify_key` at all is
+   rejected by the schema check and cannot be signed into the index,
+   so it can never opt out of tag verification; ship a signed tag and
+   declare the key.)
 
 3. **The package is a real Capa library** with a stable public
    surface (a `pub` boundary an importing program can rely on), as
@@ -97,8 +99,9 @@ checks:
 
 1. **Schema.** `index.json` parses; `registry_version` is a supported
    integer; every package name matches Capa's accepted name shape;
-   `git` is present; `verify_key` (where present) is a 40-character
-   hex fingerprint; `latest` looks like a `vX.Y.Z` tag and is a
+   `git` is present; `verify_key` is required for a git-bearing entry
+   and is a 40-character hex fingerprint; `latest` looks like a
+   `vX.Y.Z` tag and is a
    git-argv-safe ref; no unknown fields (a typo like `latset` is
    rejected rather than silently dropped).
 2. **Git URL allow-list.** Every `git` URL passes the compiler's own

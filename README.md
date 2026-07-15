@@ -35,7 +35,7 @@ A single `index.json` at the repo root:
   "packages": {
     "<name>": {
       "git": "https://github.com/<owner>/<repo>",
-      "verify_key": "<40-char GPG fingerprint, optional>",
+      "verify_key": "<40-char GPG fingerprint>",
       "latest": "<latest released tag, e.g. v0.1.3>",
       "description": "<one line>"
     }
@@ -43,10 +43,11 @@ A single `index.json` at the repo root:
 }
 ```
 
-- `git` is required. `verify_key`, `latest`, and `description`
-  are optional; a package with no `verify_key` is installed
-  without GPG-tag verification (the consumer can still add one
-  in their own `capa.toml`).
+- `git` and `verify_key` are required for every real (git-bearing)
+  entry: a listing with a git URL but no valid `verify_key` is
+  rejected by the schema check and cannot be signed into the index,
+  because it would opt out of the tag-signature verification the
+  registry promises. `latest` and `description` are optional.
 - `registry_version` lets the resolver refuse an index format it
   does not understand.
 
