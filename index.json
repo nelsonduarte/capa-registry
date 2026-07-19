@@ -1,6 +1,6 @@
 {
   "registry_version": 1,
-  "updated": "2026-07-15",
+  "updated": "2026-07-19",
   "packages": {
     "capa_base64": {
       "git": "https://github.com/nelsonduarte/capa_base64",
@@ -73,6 +73,12 @@
       "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
       "latest": "v0.1.0",
       "description": "SBOM parsing for CycloneDX and SPDX JSON with capa:* capability queries; zero capabilities."
+    },
+    "capa_server": {
+      "git": "https://github.com/nelsonduarte/capa_server",
+      "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
+      "latest": "v0.1.0",
+      "description": "A strict, fail-closed HTTP/1.1 server library written in Capa on top of the Serve capability."
     },
     "capa_test": {
       "git": "https://github.com/nelsonduarte/capa_test",
