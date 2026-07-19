@@ -77,7 +77,7 @@
     "capa_server": {
       "git": "https://github.com/nelsonduarte/capa_server",
       "verify_key": "6C1D222D491FB88031E041A536CFB426101AA24B",
-      "latest": "v0.1.0",
+      "latest": "v0.1.1",
       "description": "A strict, fail-closed HTTP/1.1 server library written in Capa on top of the Serve capability."
     },
     "capa_test": {
